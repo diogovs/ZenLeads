@@ -1,0 +1,190 @@
+@using ZenLeads.Models
+@using ZenLeads.Services
+@inject ILeadService LeadService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h4" Class="mb-4">Kanban de Leads</MudText>
+
+<div class="d-flex align-center mb-4">
+    <MudButton Variant="Variant.Filled" 
+              Color="Color.Primary" 
+              StartIcon="@Icons.Material.Filled.Add" 
+              OnClick="OpenAddDialog"
+              Disabled="@_isLoading">
+        Novo Lead
+    </MudButton>
+    
+    <MudSpacer />
+    
+    <MudTooltip Text="Atualizar">
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" 
+                      OnClick="LoadLeads" 
+                      Disabled="@_isLoading" />
+    </MudTooltip>
+</div>
+
+@if (_isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-2" />
+}
+
+<div class="d-flex flex-wrap kanban-container">
+    <CascadingValue Value="@_draggedLead" TValue="Lead">
+        <CascadingValue Value="@SetDraggedLead" Name="SetDraggedLead">
+            <KanbanColumn Title="Em Análise" 
+                         Status="LeadStatus.EmAnalise"
+                         Leads="@_leadsEmAnalise"
+                         OnLeadClick="OpenEditDialog"
+                         OnLeadDrop="HandleLeadDrop" />
+                         
+            <KanbanColumn Title="Mensagem Enviada" 
+                         Status="LeadStatus.MensagemEnviada"
+                         Leads="@_leadsMensagemEnviada"
+                         OnLeadClick="OpenEditDialog"
+                         OnLeadDrop="HandleLeadDrop" />
+                         
+            <KanbanColumn Title="Qualificado" 
+                         Status="LeadStatus.Qualificado"
+                         Leads="@_leadsQualificados"
+                         OnLeadClick="OpenEditDialog"
+                         OnLeadDrop="HandleLeadDrop" />
+                         
+            <KanbanColumn Title="Convertido" 
+                         Status="LeadStatus.Convertido"
+                         Leads="@_leadsConvertidos"
+                         OnLeadClick="OpenEditDialog"
+                         OnLeadDrop="HandleLeadDrop" />
+        </CascadingValue>
+    </CascadingValue>
+</div>
+
+<style>
+    .kanban-container {
+        min-height: 80vh;
+        gap: 16px;
+    }
+</style>
+
+@code {
+    private IEnumerable<Lead> _allLeads = new List<Lead>();
+    private IEnumerable<Lead> _leadsEmAnalise = new List<Lead>();
+    private IEnumerable<Lead> _leadsMensagemEnviada = new List<Lead>();
+    private IEnumerable<Lead> _leadsQualificados = new List<Lead>();
+    private IEnumerable<Lead> _leadsConvertidos = new List<Lead>();
+    
+    private Lead? _draggedLead;
+    private bool _isLoading = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLeads();
+    }
+    
+    private async Task LoadLeads()
+    {
+        try
+        {
+            _isLoading = true;
+            StateHasChanged();
+            
+            _allLeads = await LeadService.GetLeadsAsync();
+            FilterLeads();
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void FilterLeads()
+    {
+        _leadsEmAnalise = _allLeads.Where(l => l.Status == LeadStatus.EmAnalise);
+        _leadsMensagemEnviada = _allLeads.Where(l => l.Status == LeadStatus.MensagemEnviada);
+        _leadsQualificados = _allLeads.Where(l => l.Status == LeadStatus.Qualificado);
+        _leadsConvertidos = _allLeads.Where(l => l.Status == LeadStatus.Convertido);
+    }
+    
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters();
+        var dialog = await DialogService.ShowAsync<LeadDialog>("Novo Lead", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            await LoadLeads();
+            Snackbar.Add("Lead adicionado com sucesso!", Severity.Success);
+        }
+    }
+    
+    private async Task OpenEditDialog(Lead lead)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Lead", lead);
+        
+        var dialog = await DialogService.ShowAsync<LeadDialog>("Editar Lead", parameters);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            await LoadLeads();
+            Snackbar.Add("Lead atualizado com sucesso!", Severity.Success);
+        }
+    }
+    
+    private async Task HandleLeadDrop((Lead Lead, LeadStatus NewStatus) dropInfo)
+    {
+        try
+        {
+            _isLoading = true;
+            StateHasChanged();
+            
+            var (lead, newStatus) = dropInfo;
+            
+            // Limpar referência para evitar problemas
+            _draggedLead = null;
+            
+            Console.WriteLine($"Atualizando lead {lead.Id} para status {newStatus}");
+            var success = await LeadService.UpdateLeadStatusAsync(lead.Id, newStatus);
+            if (success)
+            {
+                Console.WriteLine("Atualização bem-sucedida, recarregando leads...");
+                await LoadLeads();
+                Snackbar.Add($"Lead movido para {GetStatusText(newStatus)}", Severity.Success);
+            }
+            else
+            {
+                Console.WriteLine("Erro na atualização do lead");
+                Snackbar.Add("Erro ao mover o lead", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exceção: {ex.Message}");
+            Snackbar.Add($"Erro: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+    private Task SetDraggedLead(Lead? lead)
+    {
+        _draggedLead = lead;
+        Console.WriteLine($"Lead definido para arrastar: {lead?.Id} - {lead?.Nome ?? "null"}");
+        return Task.CompletedTask;
+    }
+    
+    private string GetStatusText(LeadStatus status) => status switch
+    {
+        LeadStatus.EmAnalise => "Em Análise",
+        LeadStatus.MensagemEnviada => "Mensagem Enviada",
+        LeadStatus.Qualificado => "Qualificado",
+        LeadStatus.Convertido => "Convertido",
+        _ => status.ToString()
+    };
+} 

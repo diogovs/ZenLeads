@@ -1,0 +1,132 @@
+@using ZenLeads.Models
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<MudPaper Class="@($"kanban-column pa-4 ma-2 {(_isDragOver ? "drag-over" : "")}")" Elevation="3"
+         @ondrop="OnDrop" 
+         @ondragover:preventDefault
+         @ondragenter="OnDragEnter"
+         @ondragleave="OnDragLeave">
+    <MudText Typo="Typo.h6" Class="mb-4">@Title (@Leads.Count())</MudText>
+    <div class="kanban-drop-zone">
+        @foreach (var lead in Leads)
+        {
+            <MudPaper Class="kanban-item mb-3 pa-3" Elevation="2" 
+                     @key="lead.Id" 
+                     Draggable="true"
+                     @ondragstart="@((e) => OnDragStart(e, lead))"
+                     @ondragend="OnDragEnd"
+                     @onclick="@(() => OnLeadClick.InvokeAsync(lead))">
+                <MudText Typo="Typo.subtitle1">@lead.Nome</MudText>
+                <MudText Typo="Typo.body2">@lead.Email</MudText>
+                @if (!string.IsNullOrEmpty(lead.Empresa))
+                {
+                    <MudText Typo="Typo.caption">@lead.Empresa</MudText>
+                }
+            </MudPaper>
+        }
+    </div>
+</MudPaper>
+
+<style>
+    .kanban-column {
+        width: 280px;
+        min-height: 300px;
+        transition: all 0.2s ease;
+    }
+    .kanban-drop-zone {
+        min-height: 200px;
+    }
+    .kanban-item {
+        cursor: grab;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .kanban-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px 0 rgba(0,0,0,0.12) !important;
+    }
+    .kanban-item:active {
+        cursor: grabbing;
+    }
+    .drag-over {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.1);
+        border: 2px dashed var(--mud-palette-primary);
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "";
+    
+    [Parameter]
+    public LeadStatus Status { get; set; }
+    
+    [Parameter]
+    public IEnumerable<Lead> Leads { get; set; } = new List<Lead>();
+    
+    [Parameter]
+    public EventCallback<Lead> OnLeadClick { get; set; }
+    
+    [Parameter]
+    public EventCallback<(Lead Lead, LeadStatus NewStatus)> OnLeadDrop { get; set; }
+    
+    [CascadingParameter]
+    public Lead? DraggedLead { get; set; }
+    
+    [CascadingParameter(Name = "SetDraggedLead")]
+    public EventCallback<Lead> SetDraggedLead { get; set; }
+    
+    private bool _isDragOver = false;
+    
+    private async Task OnDragStart(DragEventArgs e, Lead lead)
+    {
+        try
+        {
+            // Definir dados para o objeto sendo arrastado
+            await JSRuntime.InvokeVoidAsync("console.log", $"Arrastando lead: {lead.Id} - {lead.Nome}");
+            
+            // Atualizar o estado global
+            await SetDraggedLead.InvokeAsync(lead);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Erro ao iniciar arrasto: {ex.Message}");
+        }
+    }
+    
+    private void OnDragEnd()
+    {
+        // Limpar estados quando o arrastar terminar
+    }
+    
+    private void OnDragEnter()
+    {
+        if (DraggedLead != null && DraggedLead.Status != Status)
+        {
+            _isDragOver = true;
+            StateHasChanged();
+        }
+    }
+    
+    private void OnDragLeave()
+    {
+        _isDragOver = false;
+        StateHasChanged();
+    }
+    
+    private async Task OnDrop()
+    {
+        _isDragOver = false;
+        
+        if (DraggedLead != null && DraggedLead.Status != Status)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", $"Lead solto: {DraggedLead.Id} - {DraggedLead.Nome}");
+            await JSRuntime.InvokeVoidAsync("console.log", $"Mudando status de {DraggedLead.Status} para {Status}");
+            
+            await OnLeadDrop.InvokeAsync((DraggedLead, Status));
+            
+            // Limpar o lead arrastado após o drop
+            await SetDraggedLead.InvokeAsync(null);
+        }
+    }
+} 

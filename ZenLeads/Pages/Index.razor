@@ -1,0 +1,191 @@
+﻿@page "/"
+@using ZenLeads.Models
+@using ZenLeads.Services
+@inject ILeadService LeadService
+
+<PageTitle>ZenLeads - Dashboard</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Dashboard</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-column pa-4" Elevation="3">
+            <MudText Typo="Typo.subtitle2">Total de Leads</MudText>
+            <MudText Typo="Typo.h3">@_totalLeads</MudText>
+        </MudPaper>
+    </MudItem>
+    
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-column pa-4" Style="background-color: #cfe8fc;" Elevation="3">
+            <MudText Typo="Typo.subtitle2">Em Análise</MudText>
+            <MudText Typo="Typo.h3">@_leadsEmAnalise</MudText>
+        </MudPaper>
+    </MudItem>
+    
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-column pa-4" Style="background-color: #fff8e1;" Elevation="3">
+            <MudText Typo="Typo.subtitle2">Qualificados</MudText>
+            <MudText Typo="Typo.h3">@_leadsQualificados</MudText>
+        </MudPaper>
+    </MudItem>
+    
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-column pa-4" Style="background-color: #d7f9db;" Elevation="3">
+            <MudText Typo="Typo.subtitle2">Convertidos</MudText>
+            <MudText Typo="Typo.h3">@_leadsConvertidos</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudGrid Class="mt-4">
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-4" Elevation="3">
+            <MudText Typo="Typo.h6" Class="mb-2">Leads Recentes</MudText>
+            <MudDivider Class="mb-2" />
+            @if (_leadsRecentes.Any())
+            {
+                <MudList T="Lead" Clickable="true">
+                    @foreach (var lead in _leadsRecentes)
+                    {
+                        <MudListItem T="Lead" OnClick="@(() => NavigateToLead(lead))">
+                            <div class="d-flex">
+                                <MudText>@lead.Nome</MudText>
+                                <MudSpacer />
+                                <MudChip T="string" Color="GetStatusColor(lead.Status)" Size="Size.Small">
+                                    @GetStatusText(lead.Status)
+                                </MudChip>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+            else
+            {
+                <MudText>Nenhum lead encontrado.</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+    
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-4" Elevation="3">
+            <MudText Typo="Typo.h6" Class="mb-2">Distribuição de Status</MudText>
+            <MudDivider Class="mb-4" />
+            
+            @if (_totalLeads > 0)
+            {
+                <MudChart ChartType="ChartType.Donut" 
+                         Width="250px" 
+                         Height="250px" 
+                         InputData="_statusData" 
+                         InputLabels="_statusLabels"
+                         @bind-SelectedIndex="_selectedIndex">
+                </MudChart>
+                
+                <MudText Typo="Typo.body1" Class="mt-4" Align="Align.Center">
+                    Total: @_totalLeads leads
+                </MudText>
+                
+                <div class="d-flex flex-column align-center mt-2">
+                    @foreach (var (status, count, color, index) in _statusInfos)
+                    {
+                        <div class="d-flex align-center my-1 justify-center" style="width: 100%;">
+                            <MudIcon Icon="@Icons.Material.Filled.Circle" Color="@color" Size="Size.Small" Class="mr-2" />
+                            <MudText>@status: @count</MudText>
+                            <MudText Color="Color.Secondary" Class="ml-2">(@(Math.Round(GetPercentage(count), 1))%)</MudText>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Class="my-2">Nenhum lead cadastrado ainda</MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private int _totalLeads;
+    private int _leadsEmAnalise;
+    private int _leadsMensagemEnviada;
+    private int _leadsQualificados;
+    private int _leadsConvertidos;
+    private List<Lead> _leadsRecentes = new();
+    
+    // Dados para o gráfico Donut
+    private double[] _statusData = new double[4];
+    private string[] _statusLabels = new[] { "Em Análise", "Mensagem Enviada", "Qualificados", "Convertidos" };
+    private int _selectedIndex = -1;
+    private List<(string Status, int Count, Color Color, int Index)> _statusInfos = new();
+    
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+    
+    private async Task LoadDashboardData()
+    {
+        var leads = (await LeadService.GetLeadsAsync()).ToList();
+        
+        _totalLeads = leads.Count;
+        _leadsEmAnalise = leads.Count(l => l.Status == LeadStatus.EmAnalise);
+        _leadsMensagemEnviada = leads.Count(l => l.Status == LeadStatus.MensagemEnviada);
+        _leadsQualificados = leads.Count(l => l.Status == LeadStatus.Qualificado);
+        _leadsConvertidos = leads.Count(l => l.Status == LeadStatus.Convertido);
+        
+        // Atualiza os dados para o gráfico Donut
+        _statusData = new double[] { 
+            _leadsEmAnalise,
+            _leadsMensagemEnviada, 
+            _leadsQualificados, 
+            _leadsConvertidos 
+        };
+        
+        // Se não houver dados, colocar valor mínimo para visualização
+        if (_totalLeads == 0) 
+        {
+            _statusData = new double[] { 1, 1, 1, 1 };
+        }
+        
+        // Atualiza as informações de status para a legenda
+        _statusInfos = new List<(string, int, Color, int)>
+        {
+            ("Em Análise", _leadsEmAnalise, Color.Info, 0),
+            ("Mensagem Enviada", _leadsMensagemEnviada, Color.Primary, 1),
+            ("Qualificados", _leadsQualificados, Color.Warning, 2),
+            ("Convertidos", _leadsConvertidos, Color.Success, 3)
+        };
+        
+        _leadsRecentes = leads.OrderByDescending(l => l.Id).Take(5).ToList();
+    }
+    
+    private double GetPercentage(int count)
+    {
+        return _totalLeads > 0 ? (double)count / _totalLeads * 100 : 0;
+    }
+    
+    private void NavigateToLead(Lead lead)
+    {
+        NavigationManager.NavigateTo($"/leads");
+    }
+    
+    private Color GetStatusColor(LeadStatus status) => status switch
+    {
+        LeadStatus.EmAnalise => Color.Info,
+        LeadStatus.MensagemEnviada => Color.Primary,
+        LeadStatus.Qualificado => Color.Warning,
+        LeadStatus.Convertido => Color.Success,
+        _ => Color.Default
+    };
+    
+    private string GetStatusText(LeadStatus status) => status switch
+    {
+        LeadStatus.EmAnalise => "Em Análise",
+        LeadStatus.MensagemEnviada => "Mensagem Enviada",
+        LeadStatus.Qualificado => "Qualificado",
+        LeadStatus.Convertido => "Convertido",
+        _ => status.ToString()
+    };
+}

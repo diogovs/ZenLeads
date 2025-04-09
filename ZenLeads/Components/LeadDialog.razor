@@ -1,0 +1,102 @@
+@using ZenLeads.Models
+@using ZenLeads.Services
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@inject ILeadService LeadService
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Model="@_lead" @bind-IsValid="@_formIsValid">
+            <MudTextField @bind-Value="_lead.Nome" 
+                         Label="Nome" 
+                         Required="true" 
+                         RequiredError="Nome é obrigatório"/>
+                         
+            <MudTextField @bind-Value="_lead.Email" 
+                         Label="Email" 
+                         Required="true" 
+                         RequiredError="Email é obrigatório"
+                         Validation="@(new EmailAddressAttribute() {ErrorMessage = "Email inválido"})" />
+                         
+            <MudTextField @bind-Value="_lead.Empresa" 
+                         Label="Empresa" 
+                         Class="mt-3" />
+                         
+            <MudTextField @bind-Value="_lead.Telefone" 
+                         Label="Telefone" 
+                         Class="mt-3" />
+                         
+            <MudSelect @bind-Value="_lead.Status" 
+                      T="LeadStatus"
+                      Label="Status" 
+                      Class="mt-3">
+                <MudSelectItem T="LeadStatus" Value="@LeadStatus.EmAnalise">Em Análise</MudSelectItem>
+                <MudSelectItem T="LeadStatus" Value="@LeadStatus.MensagemEnviada">Mensagem Enviada</MudSelectItem>
+                <MudSelectItem T="LeadStatus" Value="@LeadStatus.Qualificado">Qualificado</MudSelectItem>
+                <MudSelectItem T="LeadStatus" Value="@LeadStatus.Convertido">Convertido</MudSelectItem>
+            </MudSelect>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" 
+                  OnClick="SaveLead" 
+                  Disabled="@(!_formIsValid)">
+            Salvar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter]
+    public Lead? Lead { get; set; }
+    
+    private Lead _lead = new Lead();
+    private MudForm _form = new MudForm();
+    private bool _formIsValid;
+    private bool _isNew = true;
+    
+    protected override void OnInitialized()
+    {
+        if (Lead is not null)
+        {
+            _lead = new Lead
+            {
+                Id = Lead.Id,
+                Nome = Lead.Nome,
+                Email = Lead.Email,
+                Empresa = Lead.Empresa,
+                Telefone = Lead.Telefone,
+                Status = Lead.Status
+            };
+            
+            _isNew = false;
+        }
+    }
+    
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    
+    private async Task SaveLead()
+    {
+        await _form.Validate();
+        
+        if (_formIsValid)
+        {
+            if (_isNew)
+            {
+                await LeadService.AddLeadAsync(_lead);
+            }
+            else
+            {
+                await LeadService.UpdateLeadAsync(_lead);
+            }
+            
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+    }
+} 

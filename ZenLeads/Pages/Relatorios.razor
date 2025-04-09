@@ -1,0 +1,148 @@
+@page "/relatorios"
+@using ZenLeads.Models
+@using ZenLeads.Services
+@inject ILeadService LeadService
+
+<PageTitle>ZenLeads - Relatórios</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Relatórios</MudText>
+
+<MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-3">
+    <MudTabPanel Text="Visão Geral">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Distribuição por Status</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudChart ChartType="ChartType.Pie" 
+                                Width="300px" 
+                                Height="300px" 
+                                InputData="@_dadosGrafico" 
+                                InputLabels="@_labelsGrafico">
+                        </MudChart>
+                        
+                        @if (_totalLeads > 0)
+                        {
+                            <div class="d-flex flex-column align-center mt-4">
+                                <MudText Typo="Typo.body1" Align="Align.Center">
+                                    Total: @_totalLeads leads
+                                </MudText>
+                                
+                                <div class="d-flex flex-wrap justify-center mt-2">
+                                    @for (int i = 0; i < _labelsGrafico.Length; i++)
+                                    {
+                                        var status = _labelsGrafico[i];
+                                        var count = (int)_dadosStatus[i];
+                                        var color = _coresStatus[i];
+                                        var percent = _totalLeads > 0 ? Math.Round((double)count / _totalLeads * 100, 1) : 0;
+                                        
+                                        <div class="d-flex align-center mx-2 my-1">
+                                            <MudIcon Icon="@Icons.Material.Filled.Circle" 
+                                                   Color="@color" 
+                                                   Size="Size.Small" 
+                                                   Class="mr-2" />
+                                            <MudText>@status: @count</MudText>
+                                            <MudText Color="Color.Secondary" Class="ml-1">(@percent%)</MudText>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body1" Class="mt-4" Align="Align.Center">
+                                Nenhum lead cadastrado ainda
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+    <MudTabPanel Text="Exportar Dados">
+        <MudPaper Class="pa-4" Elevation="3">
+            <MudText Class="mb-4">
+                Selecione as opções de exportação e clique no botão para gerar o relatório.
+            </MudText>
+            
+            <MudSelect T="LeadStatus?" Label="Filtrar por Status" 
+                      @bind-Value="_filtroStatus" 
+                      AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem T="LeadStatus?" Value="@((LeadStatus?)null)">Todos</MudSelectItem>
+                <MudSelectItem T="LeadStatus?" Value="@(LeadStatus.EmAnalise)">Em Análise</MudSelectItem>
+                <MudSelectItem T="LeadStatus?" Value="@(LeadStatus.MensagemEnviada)">Mensagem Enviada</MudSelectItem>
+                <MudSelectItem T="LeadStatus?" Value="@(LeadStatus.Qualificado)">Qualificado</MudSelectItem>
+                <MudSelectItem T="LeadStatus?" Value="@(LeadStatus.Convertido)">Convertido</MudSelectItem>
+            </MudSelect>
+            
+            <div class="d-flex mt-4">
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          StartIcon="@Icons.Material.Filled.Download"
+                          OnClick="GerarRelatorio">
+                    Exportar CSV
+                </MudButton>
+            </div>
+        </MudPaper>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private LeadStatus? _filtroStatus = null;
+    private double[] _dadosGrafico = new double[4];
+    private string[] _labelsGrafico = new[] { "Em Análise", "Mensagem Enviada", "Qualificado", "Convertido" };
+    private Color[] _coresStatus = new[] { Color.Info, Color.Primary, Color.Warning, Color.Success };
+    private int[] _dadosStatus = new int[4];
+    private int _totalLeads = 0;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarDadosGrafico();
+    }
+    
+    private async Task CarregarDadosGrafico()
+    {
+        var leads = (await LeadService.GetLeadsAsync()).ToList();
+        _totalLeads = leads.Count;
+        
+        if (leads.Any())
+        {
+            _dadosStatus[0] = leads.Count(l => l.Status == LeadStatus.EmAnalise);
+            _dadosStatus[1] = leads.Count(l => l.Status == LeadStatus.MensagemEnviada);
+            _dadosStatus[2] = leads.Count(l => l.Status == LeadStatus.Qualificado);
+            _dadosStatus[3] = leads.Count(l => l.Status == LeadStatus.Convertido);
+            
+            // Atualiza os dados para o gráfico
+            for (int i = 0; i < 4; i++)
+            {
+                _dadosGrafico[i] = _dadosStatus[i];
+            }
+            
+            // Se não houver nenhum dado, colocar um valor mínimo em cada fatia para visualização
+            if (_totalLeads == 0 || _dadosGrafico.Sum() == 0)
+            {
+                _dadosGrafico = new double[] { 1, 1, 1, 1 };
+            }
+        }
+        else
+        {
+            // Gráfico vazio mas visualmente equilibrado
+            _dadosGrafico = new double[] { 1, 1, 1, 1 };
+            _dadosStatus = new int[] { 0, 0, 0, 0 };
+        }
+    }
+    
+    private async Task GerarRelatorio()
+    {
+        // Em uma implementação real, aqui seria gerado um arquivo CSV
+        // e feito o download para o usuário
+        await Task.Delay(1000); // Simula o tempo de geração do relatório
+        
+        // Nesse exemplo, apenas exibimos uma mensagem no console
+        Console.WriteLine($"Relatório gerado com filtro: {_filtroStatus?.ToString() ?? "Todos"}");
+    }
+} 

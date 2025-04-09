@@ -1,0 +1,125 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Projetos\\Cursor\\ZenLeads\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2E9AC7FB-EE2A-1272-D686-9A6FB93ED798}|ZenLeads\\ZenLeads.csproj|c:\\projetos\\cursor\\zenleads\\zenleads\\components\\kanbancolumn.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2E9AC7FB-EE2A-1272-D686-9A6FB93ED798}|ZenLeads\\ZenLeads.csproj|solutionrelative:zenleads\\components\\kanbancolumn.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E9AC7FB-EE2A-1272-D686-9A6FB93ED798}|ZenLeads\\ZenLeads.csproj|c:\\projetos\\cursor\\zenleads\\zenleads\\shared\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2E9AC7FB-EE2A-1272-D686-9A6FB93ED798}|ZenLeads\\ZenLeads.csproj|solutionrelative:zenleads\\shared\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E9AC7FB-EE2A-1272-D686-9A6FB93ED798}|ZenLeads\\ZenLeads.csproj|c:\\projetos\\cursor\\zenleads\\zenleads\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2E9AC7FB-EE2A-1272-D686-9A6FB93ED798}|ZenLeads\\ZenLeads.csproj|solutionrelative:zenleads\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 441,
+          "SelectedChildIndex": 14,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{65ddf8c3-8f89-4077-a6c6-dbb8853aab13}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:4:0:{65ddf8c3-8f89-4077-a6c6-dbb8853aab13}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{65ddf8c3-8f89-4077-a6c6-dbb8853aab13}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{809f6ff3-8092-454a-8003-6d4091f9b5bb}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:14:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:15:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:2:0:{65ddf8c3-8f89-4077-a6c6-dbb8853aab13}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:16:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:12:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:17:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:13:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:11:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:135:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "KanbanColumn.razor",
+              "DocumentMoniker": "C:\\Projetos\\Cursor\\ZenLeads\\ZenLeads\\Components\\KanbanColumn.razor",
+              "RelativeDocumentMoniker": "ZenLeads\\Components\\KanbanColumn.razor",
+              "ToolTip": "C:\\Projetos\\Cursor\\ZenLeads\\ZenLeads\\Components\\KanbanColumn.razor",
+              "RelativeToolTip": "ZenLeads\\Components\\KanbanColumn.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-03-31T20:03:42.326Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Projetos\\Cursor\\ZenLeads\\ZenLeads\\Shared\\NavMenu.razor",
+              "RelativeDocumentMoniker": "ZenLeads\\Shared\\NavMenu.razor",
+              "ToolTip": "C:\\Projetos\\Cursor\\ZenLeads\\ZenLeads\\Shared\\NavMenu.razor",
+              "RelativeToolTip": "ZenLeads\\Shared\\NavMenu.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-03-31T14:12:06.013Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Projetos\\Cursor\\ZenLeads\\ZenLeads\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "ZenLeads\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Projetos\\Cursor\\ZenLeads\\ZenLeads\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "ZenLeads\\Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-31T14:11:29.219Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
